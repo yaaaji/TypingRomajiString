@@ -8,11 +8,11 @@ namespace Yaaaji.Util
 	// タイピング用のローマ字のバリエーションを管理するクラス.
 	public class TypingString
 	{
-		string srcHiragana = new();
+		string srcHiragana = "";
 
-		string fixedRomaji = new();
+		string fixedRomaji = "";
 
-		string leftRomaji = new();
+		string leftRomaji = "";
 
 		Color _fixedColor = Color.gray;
 		public Color fixedColor {
