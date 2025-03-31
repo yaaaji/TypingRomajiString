@@ -1,0 +1,9 @@
+{
+    "name": "com.yaaaji.typingromajistring",
+    "version": "0.8.12",
+    "displayName": "Yaaaji TypingRomajiString",
+    "description": "romaji to hiragana lib",
+    "unity": "2022.3",
+    "dependencies": {},
+    "keywords": ["typing", "romaji", "string"]
+}
