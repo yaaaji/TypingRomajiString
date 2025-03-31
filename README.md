@@ -1,0 +1,2 @@
+# TypingRomajiString
+ローマ字タイピング用の文字列クラスと変換処理
