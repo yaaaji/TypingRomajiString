@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Yaaaji.Util
 {
 	// タイピング用のローマ字のバリエーションを管理するクラス.
-	public class TypingString
+	public class TypingRomajiString
 	{
 		string srcHiragana = "";
 
@@ -287,7 +287,7 @@ namespace Yaaaji.Util
 			return totalAcceptCount;
 		}
 
-		public TypingString(string hiragana)
+		public TypingRomajiString(string hiragana)
 		{
 			// hiraganaを分解して、_hiraganaListに追加する
 			srcHiragana = hiragana;
