@@ -47,7 +47,7 @@ namespace Yaaaji.Util
 
 		public string romajiModified {
 			get{
-				return $"{fixedColorTag}{fixedRomaji}</color>{leftColorTag}{leftRomaji}<>";
+				return $"{fixedColorTag}{fixedRomaji}</color>{leftColorTag}{leftRomaji}</color>";
 			}
 		}
 
