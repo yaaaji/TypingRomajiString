@@ -304,7 +304,7 @@ namespace Yaaaji.Util
 				else if ( c == 'ん' )
 				{
 					// 次が母音かNもしくは最後の文字の場合はnnにする.
-					if ( ((i+1) < length && (IsVowel(input[i+1]) || IsNagyou(input[i+1])))
+					if ( ((i+1) < length && (IsVowel(input[i+1]) || IsNagyou(input[i+1])||IsYagyou(input[i+1])))
 						|| (i+1) >= length )
 					{
 						result += "nn";
@@ -400,6 +400,11 @@ namespace Yaaaji.Util
 				}
 			}
 			return result;
+		}
+
+		private static bool IsYagyou(char c)
+		{
+			return "やゆよ".IndexOf(c) >= 0;
 		}
 
 		private static bool IsNagyou(char c)
