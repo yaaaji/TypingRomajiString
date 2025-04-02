@@ -192,7 +192,7 @@ namespace Yaaaji.Util
 				else if ( c == 'ん' )
 				{
 					// 次が母音かNもしくは最後の文字の場合はnn,xnにする.
-					if ( ((i+1) < length && (IsVowel(input[i+1]) || IsNagyou(input[i+1])))
+					if ( ((i+1) < length && (IsVowel(input[i+1]) || IsNagyou(input[i+1]) || IsYagyou(input[i+1]) ) )
 						|| (i+1) >= length )
 					{
 						yield return new("ん",nRomajiList);

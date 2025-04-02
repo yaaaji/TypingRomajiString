@@ -138,6 +138,11 @@ namespace Yaaaji.Util
 							kanaIndex = 1;
 							return 1;
 						}
+						// 次のローマ字がyで先頭が該当するなら何もしない(nyの時)
+						else if ( c == 'y' )
+						{
+							break;
+						}
 						// 次のローマ字の先頭だったら一旦終わらせる（パラメータの更新は無し)
 						else if ( nextParts != null && nextParts.topCaharaCheck(c) )
 						{
