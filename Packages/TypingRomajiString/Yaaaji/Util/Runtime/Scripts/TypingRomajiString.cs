@@ -302,8 +302,6 @@ namespace Yaaaji.Util
 			foreach (var kanaRomanPair in hiragana.ConvertHiraganaToRomaji())
 			{
 				var (kana,romajiList) = kanaRomanPair;
-				// リストを短い順にソートする.
-				romajiList.Sort((a, b) => a.Length.CompareTo(b.Length));
 				var parts = new RomajiParts(kanaIndex, kana, romajiList);
 				_romajiList.Add( parts );
 				kanaIndex = parts.kanaLength;

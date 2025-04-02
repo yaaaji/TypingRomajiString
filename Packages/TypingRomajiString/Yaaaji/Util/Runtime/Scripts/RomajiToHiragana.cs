@@ -142,7 +142,7 @@ namespace Yaaaji.Util
 			return result;
 		}
 
-		public static IEnumerable<Tuple<string,List<string>>> ConvertHiraganaToRomaji(this string input)
+		static IEnumerable<Tuple<string,List<string>>> convertHiraganaToRomaji(this string input)
 		{
 			int length = input.Length;
 			bool prevN = false;
@@ -264,10 +264,27 @@ namespace Yaaaji.Util
 			}
 		}
 
+		public static IEnumerable<Tuple<string,List<string>>> ConvertHiraganaToRomaji(this string input)
+		{
+			foreach(var pair in convertHiraganaToRomaji(input))
+			{
+				var romajiList = pair.Item2;
+				romajiList.Sort((a, b) => {
+					if ( a[0] == 'c' && b[0] != 'c' ) return 1;
+					return a.Length.CompareTo(b.Length);
+				});
+				yield return pair;
+			}
+		}
+
 		public static string ConvertHiraganaToRomaji(this string input, bool useRandom = false){
 			string result = "";
-			int length = input.Length;
-
+			foreach(var pair in ConvertHiraganaToRomaji(input))
+			{
+				result += pair.Item2[0];
+			}
+			return result;
+			/*
 			string nextRomaji = "";
 
 			for (int i = 0; i < length;)
@@ -340,6 +357,7 @@ namespace Yaaaji.Util
 				}
 			}
 			return result;
+			*/
 		}
 
 		public static string ConvertRomajiToHiragana(string input, bool isTruncate = false)
