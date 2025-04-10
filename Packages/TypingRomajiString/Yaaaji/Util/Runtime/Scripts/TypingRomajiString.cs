@@ -61,12 +61,14 @@ namespace Yaaaji.Util
 			public int kanaIndex = 0;
 			public int kanaLength => kana.Length;
 			public bool isComplete => kanaIndex >= kanaLength;
+			public bool isNComplete => isComplete && isNWait;
 			public int selectIndex = 0;
 			public bool isChangeSelectIndex = false;
 			public int inputIndex = 0;
 			public string inputHistory = "";
 			public bool isN => romajiList[selectIndex] == "n";
 			public bool isNWait => isN && inputIndex == 1;
+			public string activeRomaji => romajiList[selectIndex];
 
 			public RomajiParts(int index,string kana,List<string> romajiList)
 			{
@@ -129,7 +131,7 @@ namespace Yaaaji.Util
 					// "ん"の時は次の文字を見て次のローマ字に行く.
 					if ( isNWait )
 					{
-						//Dev.Log($"isNWait: {inputHistory} c:{c}");
+						//Debug.Log($"UpdateInput.isNWait: {inputHistory} c:{c} next:{nextParts?.activeRomaji} idx:{inputIndex}");
 
 						// 2個目のnか次のパーツの頭文字だったら次のローマ字に行く.
 						// nnなら完了.
@@ -151,6 +153,7 @@ namespace Yaaaji.Util
 							isValid = true;
 							kanaIndex = 1;
 							// nextPartsの先頭を1文字処理してはいけない(indexだけ変える.).
+							//Debug.Log($"UpdateInput isNWait アクセプト: {inputHistory} c:{c} next:{nextParts?.activeRomaji} idx:{inputIndex}");
 							return 0;
 						}
 						// それ以外は受け付けない.
@@ -178,14 +181,13 @@ namespace Yaaaji.Util
 					}
 				}
 				if ( isValid ){
-					// inputHistoryの文字列をかなに変換する.
-					var historyKana = inputHistory.ToHiragana(isTruncate: true);
-
 					// nの時だけはvalid扱いにしない.
 					if ( isNWait ){
 						// n待ちの時はkanaIndexを更新しない（確定していないため).
 					}
 					else{
+						// inputHistoryの文字列をかなに変換する.
+						var historyKana = inputHistory.ToHiragana(isTruncate: true);
 						// かなの長さが変わったらselectIndexを更新する.
 						kanaIndex = historyKana.Length;
 					}
@@ -210,8 +212,7 @@ namespace Yaaaji.Util
 		}
 		RomajiParts nextParts {
 			get{
-				if (romajiPartsIndex < 0 || romajiPartsIndex >= _romajiList.Count) return null;
-				if (romajiPartsIndex+1 >= _romajiList.Count) return null;
+				if (romajiPartsIndex < 0 || romajiPartsIndex+1 >= _romajiList.Count) return null;
 				return _romajiList[romajiPartsIndex+1];
 			}
 		}
@@ -256,26 +257,25 @@ namespace Yaaaji.Util
 			if ( isComplete ) return 0;
 
 			//
-			var curParts = currentParts;
-			if ( curParts == null ) return 0;
 
 			// 入力が尽きるまで進める.
 			int totalAcceptCount = 0;
 			while(true){
+				var curParts = currentParts;
+				if ( curParts == null ) return 0;
 				int acceptCount = curParts.UpdateInput(inputRomaji,nextParts);
 				totalAcceptCount += acceptCount;
 				// 一文字も受け入れられなかったら終了.
-				if ( !curParts.isComplete && acceptCount <= 0 ) break;
+				if ( !curParts.isNComplete && acceptCount <= 0 ) break;
 
 				// 文字列変更フラグを立てる.
 				m_isChangeSelectIndex |= curParts.isChangeSelectIndex;
 
 				// 
 				if ( curParts.isComplete ){
-					//Dev.Log($"Complete: {curParts.inputHistory} acceptCount: {acceptCount} inputRomaji: {inputRomaji}");
 					inputRomaji = inputRomaji.Substring(acceptCount);
-					//Dev.Log($"Complete Update: {inputRomaji}");
 
+					// 完了したら次のPartsに進む.
 					romajiPartsIndex++;
 
 					if ( isComplete ){
