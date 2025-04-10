@@ -135,6 +135,7 @@ namespace Yaaaji.Util
 						// nnなら完了.
 						if ( c == 'n' )
 						{
+							// 文字の変更が入る.
 							isValid = searchOtherRomaji(c,isValid);
 							kanaIndex = 1;
 							return 1;
@@ -149,8 +150,8 @@ namespace Yaaaji.Util
 						{
 							isValid = true;
 							kanaIndex = 1;
-							// nextPartsの先頭を1文字処理してはいけない.
-							return 1;//nextParts.UpdateInput(c.ToString(),null);
+							// nextPartsの先頭を1文字処理してはいけない(indexだけ変える.).
+							return 0;
 						}
 						// それ以外は受け付けない.
 						break;
@@ -179,8 +180,15 @@ namespace Yaaaji.Util
 				if ( isValid ){
 					// inputHistoryの文字列をかなに変換する.
 					var historyKana = inputHistory.ToHiragana(isTruncate: true);
-					// かなの長さが変わったらselectIndexを更新する.
-					kanaIndex = historyKana.Length;
+
+					// nの時だけはvalid扱いにしない.
+					if ( isNWait ){
+						// n待ちの時はkanaIndexを更新しない（確定していないため).
+					}
+					else{
+						// かなの長さが変わったらselectIndexを更新する.
+						kanaIndex = historyKana.Length;
+					}
 
 					//Dev.Log($"kana: {kana}, select:{romajiList[selectIndex]} inputHistory: {inputHistory}, kanaIndex: {kanaIndex}, selectIndex: {selectIndex}, inputIndex: {inputIndex}");
 
@@ -257,7 +265,7 @@ namespace Yaaaji.Util
 				int acceptCount = curParts.UpdateInput(inputRomaji,nextParts);
 				totalAcceptCount += acceptCount;
 				// 一文字も受け入れられなかったら終了.
-				if ( acceptCount <= 0 ) break;
+				if ( !curParts.isComplete && acceptCount <= 0 ) break;
 
 				// 文字列変更フラグを立てる.
 				m_isChangeSelectIndex |= curParts.isChangeSelectIndex;
