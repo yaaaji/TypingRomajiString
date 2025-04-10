@@ -209,7 +209,9 @@ namespace Yaaaji.Util
 
 		string getFixedRomajiString(int index)
 		{
-			if (index < 0 || index >= _romajiList.Count) return "";
+			if ( index < 0 ) return "";
+			index = Mathf.Min(index, _romajiList.Count-1);
+
 			// 0から指定されたindexまでのPartsをselectIndex,inputIndexを考慮して結合する
 			var result = "";
 			for (var i = 0; i < index+1; i++)
