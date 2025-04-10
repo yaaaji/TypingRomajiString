@@ -132,6 +132,7 @@ namespace Yaaaji.Util
 						//Dev.Log($"isNWait: {inputHistory} c:{c}");
 
 						// 2個目のnか次のパーツの頭文字だったら次のローマ字に行く.
+						// nnなら完了.
 						if ( c == 'n' )
 						{
 							isValid = searchOtherRomaji(c,isValid);
@@ -148,8 +149,8 @@ namespace Yaaaji.Util
 						{
 							isValid = true;
 							kanaIndex = 1;
-							// nextPartsの先頭を1文字処理する.
-							return nextParts.UpdateInput(c.ToString(),null);
+							// nextPartsの先頭を1文字処理してはいけない.
+							return 1;//nextParts.UpdateInput(c.ToString(),null);
 						}
 						// それ以外は受け付けない.
 						break;
