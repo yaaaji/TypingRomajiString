@@ -38,6 +38,8 @@ namespace Yaaaji.Util
 
 		public bool isComplete => romajiPartsIndex >= _romajiList.Count;
 
+		public string kanaText => srcHiragana;
+
 		// 全体のローマ字を取得するプロパティ
 		public string romaji {
 			get{
@@ -51,30 +53,128 @@ namespace Yaaaji.Util
 			}
 		}
 
-		private bool m_isChangeSelectIndex = false;
-		//public bool isChangeRomajiString => currentParts?.isChangeSelectIndex ?? false;
-		public bool isChangeRomajiString => m_isChangeSelectIndex;
+		private bool m_isChangeString = false;
+		public bool isChangeRomajiString => m_isChangeString;
+
+		public class Node{
+			public char c = ' ';
+			public int level = 0;
+			public int index = 0;
+			public string str = null;
+			public List<Node> nextList = new ();
+			public Dictionary<char,Node> nextDic;
+			public bool isEnd => nextDic == null || nextDic.Count <= 0;
+
+			public Node(char c,int level,int index)
+			{
+				this.c = c;
+				this.level = level;
+				this.index = index;
+			}
+
+			public string endString{
+				get{
+					// 末端のノードまで移動する.
+					if (isEnd) return str;
+					var node = nextList[0];
+					// 0番目のノードを優先する.
+					while( node != null && !node.isEnd )
+					{
+						node = node.nextList[0];
+					}
+					if ( node == null ) return"";
+					return node.str;
+				}
+			}
+
+			public Node AddNext(char nextC,int index)
+			{
+				if (nextDic == null) nextDic = new ();
+				var n = FindNext(nextC);
+				// 新規追加の場合.
+				if ( n == null) {
+					var node = new Node(nextC,level+1,index);
+					nextDic.Add(node.c,node);
+					nextList.Add(node);
+					return node;
+				}
+				//既存の場合は普通にNodeを返す.
+				return n;
+			}
+
+			public Node FindNext(char c)
+			{
+				if (nextDic == null) return null;
+				nextDic.TryGetValue(c,out var node);
+				return node;
+			}
+		}
 
 		class RomajiParts{
 			public string kana = "";
 			public List<string> romajiList = new ();
+			public Node rootNode = new Node(' ',-1,0);
+			Node currentNode = null;
 			public int kanaIndex = 0;
 			public int kanaLength => kana.Length;
 			public bool isComplete => kanaIndex >= kanaLength;
 			public bool isNComplete => isComplete && isNWait;
-			public int selectIndex = 0;
-			public bool isChangeSelectIndex = false;
+			public bool isChangeString = false;
 			public int inputIndex = 0;
 			public string inputHistory = "";
-			public bool isN => romajiList[selectIndex] == "n";
+			public bool isN => activeRomaji == "n";
 			public bool isNWait => isN && inputIndex == 1;
-			public string activeRomaji => romajiList[selectIndex];
+			public string activeRomaji => currentNode.endString;
 
 			public RomajiParts(int index,string kana,List<string> romajiList)
 			{
 				this.kana = kana;
 				this.romajiList = romajiList;
+				// romajiListからcharに分解した木構造を作る.
+				// 先頭の文字をrootNodeに追加する.
+				for (int i = 0; i < romajiList.Count; i++)
+				{
+					var r = romajiList[i];
+					if (r.Length <= 0) continue;
+					var node = rootNode.AddNext(r[0],i);
+					// 2文字目以降を追加する.
+					for(int c = 1; c < r.Length; c++)
+					{
+						node = node.AddNext(r[c],i);
+					}
+					// 末端のノードに最終系を追加する.
+					node.str = r;
+				}
+				currentNode = rootNode;
+				//var tree = DumpNode(currentNode);
+				//Debug.Log(tree);
 			}
+
+			// s
+			// +i
+			// +h
+			//  +i
+			// c
+			//  +i
+			// のような表示ツリー構造を作る.
+			string DumpNode(Node node){
+				int level = node.level-1<0 ? 0 : node.level;
+				string plus = node.level-1<0? "" : "+";
+				var result = $"{new string(' ', level)}{plus}{node.c}\n";
+				if (node.isEnd) return result;
+				foreach(var kv in node.nextDic)
+				{
+					var n = kv.Value;
+					result += DumpNode(n);
+				}
+				return result;
+			}
+
+			// 現在のノードの文字列を取得する.
+			public string NodeString { get{
+				if (currentNode == null) return "";
+				return currentNode.endString;
+			}}
 
 			// 先頭1文字をチェックする.
 			// nの打ち切り用に使う.
@@ -90,35 +190,35 @@ namespace Yaaaji.Util
 			bool searchOtherRomaji(char c,bool isValid)
 			{
 				// 他のリストにあるか調べる.
-				for(int idx = 0 ; idx < romajiList.Count; idx++)
+				// その箇所だけ調べるとおかしな組み合わせになる事があるのでフラグと比べる.
+				var next = currentNode.FindNext(c);
+				if ( next != null )
 				{
-					if (idx == selectIndex) continue;
-					var r = romajiList[idx];
-					if (r.Length <= inputIndex) continue;
-					if (r[inputIndex] == c)
-					{
-						isChangeSelectIndex = true;
-						selectIndex = idx;
-						inputHistory += c;
-						inputIndex++;
-						isValid = true;
-						// みつけた.
-						//Dev.Log($"searchOtherRomaji: Find {inputHistory} selectIndex: {selectIndex} inputIndex: {inputIndex}");
-						break;
-					}
+					//Debug.Log($"searchOtherRomaji: {inputHistory} c:{c} idx:{inputIndex}");
+					isChangeString = true;
+					inputHistory += c;
+					inputIndex++;
+					// 次のノードに移動する.
+					currentNode = next;
+					isValid = true;
 				}
+				else
+				{
+					//Debug.Log($"searchOtherRomaji: {inputHistory} c:{c} idx:{inputIndex} not found.");
+				}
+
 				return isValid;
 			}
 
 
 			public int UpdateInput(string inputRomaji,RomajiParts nextParts = null)
 			{
-				isChangeSelectIndex = false;
+				isChangeString = false;
 				if (string.IsNullOrEmpty(inputRomaji)) return 0;
 
-				//Dev.Log($"Update kana: {kana}, select:{romajiList[selectIndex]} inputHistory: {inputHistory}, kanaIndex: {kanaIndex}, selectIndex: {selectIndex}, inputIndex: {inputIndex}");
+				//Dev.Log($"Update kana: {kana}, select:{activeRomaji} inputHistory: {inputHistory}, kanaIndex: {kanaIndex}, inputIndex: {inputIndex}");
 
-				// 入力されたローマ字からselectIndexが変わるか調べる.
+				// 入力されたローマ字から文字列が変わるか調べる.
 				// 無効な文字列が見つかったらhistroyの追加をやめる.
 				// それ以外はhistoryに追加する.
 				// "ん"の時だけ特殊な処理になる(n単独の場合次の単語の先頭が来たら次に行ける)
@@ -126,8 +226,7 @@ namespace Yaaaji.Util
 				int prevIndex = inputIndex;
 				foreach(var c in inputRomaji)
 				{
-					if (selectIndex >= romajiList.Count) break;
-					var romaji = romajiList[selectIndex];
+					var romaji = activeRomaji;
 					// "ん"の時は次の文字を見て次のローマ字に行く.
 					if ( isNWait )
 					{
@@ -162,10 +261,12 @@ namespace Yaaaji.Util
 
 					if (romaji.Length <= inputIndex) break;
 
-					if (romaji[inputIndex] == c)
+					var next = currentNode.FindNext(c);
+					if ( next != null )
 					{
 						inputHistory += c;
 						inputIndex++;
+						currentNode = next;
 						isValid = true;
 					}
 					// 今のローマ字候補に無い場合.
@@ -188,12 +289,9 @@ namespace Yaaaji.Util
 					else{
 						// inputHistoryの文字列をかなに変換する.
 						var historyKana = inputHistory.ToHiragana(isTruncate: true);
-						// かなの長さが変わったらselectIndexを更新する.
+						// かなの長さが変わったらかなのindexを更新する.
 						kanaIndex = historyKana.Length;
 					}
-
-					//Dev.Log($"kana: {kana}, select:{romajiList[selectIndex]} inputHistory: {inputHistory}, kanaIndex: {kanaIndex}, selectIndex: {selectIndex}, inputIndex: {inputIndex}");
-
 					// 入力文字を何文字使ったか調べる.
 					return inputIndex - prevIndex;
 				}
@@ -222,7 +320,7 @@ namespace Yaaaji.Util
 			if ( index < 0 ) return "";
 			index = Mathf.Min(index, _romajiList.Count-1);
 
-			// 0から指定されたindexまでのPartsをselectIndex,inputIndexを考慮して結合する
+			// 0から指定されたindexまでのPartsをinputIndexを考慮して結合する
 			var result = "";
 			for (var i = 0; i < index+1; i++)
 			{
@@ -236,21 +334,21 @@ namespace Yaaaji.Util
 		string getLeftRomajiString(int index)
 		{
 			if (index < 0 || index >= _romajiList.Count) return "";
-			// 指定されたindexから最後までのPartsをselectIndex,inputIndexを考慮して結合する
+			// 指定されたindexから最後までのPartsをinputIndexを考慮して結合する
 			var result = "";
 			var parts = _romajiList[index];
-			result += parts.romajiList[parts.selectIndex].Substring(parts.inputIndex);
+			result += parts.activeRomaji.Substring(parts.inputIndex);
 			for (var i = index+1; i < _romajiList.Count; i++)
 			{
 				parts = _romajiList[i];
-				result += parts.romajiList[parts.selectIndex];
+				result += parts.activeRomaji;
 			}
 			return result;
 		}
 
 		// 追加インプットされたローマ字リストからfixedとleftを更新する
 		public int UpdateInputString(string inputRomaji){
-			m_isChangeSelectIndex = false;
+			m_isChangeString = false;
 
 			if ( string.IsNullOrEmpty(inputRomaji) ) return 0;
 
@@ -269,7 +367,7 @@ namespace Yaaaji.Util
 				if ( !curParts.isNComplete && acceptCount <= 0 ) break;
 
 				// 文字列変更フラグを立てる.
-				m_isChangeSelectIndex |= curParts.isChangeSelectIndex;
+				m_isChangeString |= curParts.isChangeString;
 
 				// 
 				if ( curParts.isComplete ){
@@ -329,7 +427,7 @@ namespace Yaaaji.Util
 			Debug.Log($"leftRomaji: {leftRomaji}");
 			Debug.Log($"romajiPartsIndex: {romajiPartsIndex}");
 			foreach(var parts in _romajiList){
-				Debug.Log($"kana: {parts.kana}, romajiList: {string.Join(",", parts.romajiList)}, kanaIndex: {parts.kanaIndex}, selectIndex: {parts.selectIndex}, inputIndex: {parts.inputIndex}, inputHistory: {parts.inputHistory}");
+				Debug.Log($"kana: {parts.kana}, romajiList: {string.Join(",", parts.romajiList)}, kanaIndex: {parts.kanaIndex}, inputIndex: {parts.inputIndex}, inputHistory: {parts.inputHistory}");
 			}
 
 		}

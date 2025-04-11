@@ -41,6 +41,7 @@ namespace Yaaaji.Util
 			{ "dha", "でゃ" }, { "dhi", "でぃ" }, { "dhu", "でゅ" }, { "dhe", "でぇ" }, { "dho", "でょ" },
 			{ "cha", "ちゃ" }, { "chi", "ち" }, { "chu", "ちゅ" }, { "che", "ちぇ" }, { "cho", "ちょ" },
 			{ "tsa", "つぁ" }, { "tsi", "つぃ" }, { "tsu", "つ" }, { "tse", "つぇ" }, { "tso", "つぉ" },
+			{ "tha", "てゃ" }, { "thi", "てぃ" }, { "thu", "てゅ" }, { "the", "てぇ" }, { "tho", "てょ" },
 			{ "tya", "ちゃ" }, { "tyi", "ちぃ" }, { "tyu", "ちゅ" },{ "tye", "ちぇ" },  { "tyo", "ちょ" },
 			{ "nya", "にゃ" }, { "nyi", "にぃ" }, { "nyu", "にゅ" }, { "nye", "にぇ" }, { "nyo", "にょ" },
 			{ "hya", "ひゃ" }, { "hyi", "ひぃ" }, { "hyu", "ひゅ" }, { "hye", "ひぇ" }, { "hyo", "ひょ" },
@@ -50,7 +51,7 @@ namespace Yaaaji.Util
 			{ "pya", "ぴゃ" }, { "pyi", "ぴぃ" }, { "pyu", "ぴゅ" }, { "pye", "ぴぇ" }, { "pyo", "ぴょ" },
 			{ "lya", "ゃ" }, { "lyi", "ぃ" }, { "lyu", "ゅ" }, { "lye", "ぇ" }, { "lyo", "ょ" },
 			{ "xya", "ゃ" }, { "xyi", "ぃ" }, { "xyu", "ゅ" }, { "xye", "ぇ" }, { "xyo", "ょ" },
-			{ "ltu", "っ" }, { "xtu", "っ" }
+			{ "ltu", "っ" }, { "ltsu", "っ" }, { "xtu", "っ" }, { "xtsu", "っ" }
 		};
 
 		private static readonly List<string> nRomajiList = new List<string>
