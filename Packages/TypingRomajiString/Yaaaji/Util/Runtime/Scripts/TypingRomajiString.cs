@@ -126,9 +126,27 @@ namespace Yaaaji.Util
 			public bool isChangeString = false;
 			public int inputIndex = 0;
 			public string inputHistory = "";
-			public bool isN => activeRomaji == "n";
-			public bool isNWait => isN && inputIndex == 1;
-			public string activeRomaji => currentNode.endString;
+			public bool isN => kana == "ん";
+			public bool isNWait => isN && inputHistory=="n" && inputIndex == 1;
+			public string activeRomaji {
+				get{
+					if ( isN ){
+						if ( inputIndex > 0 )
+						{
+							if ( inputHistory[0] == 'n' ){
+								return inputHistory;
+							}
+							else{
+								return currentNode.endString; // xnが返る.
+							}
+						}
+						else{
+							return "n";
+						}
+					}
+					return currentNode.endString;
+				}
+			}
 
 			public RomajiParts(int index,string kana,List<string> romajiList)
 			{
@@ -274,11 +292,13 @@ namespace Yaaaji.Util
 						currentNode = next;
 						isValid = true;
 					}
-					// 今のローマ字候補に無い場合.
+					// 見つからなかった
 					else
 					{
+						isValid = false;
 						// 他のリストにあるか調べる.
-						isValid = searchOtherRomaji(c,isValid);
+						//isValid = searchOtherRomaji(c,isValid);
+						// 見つからない場合はn待ちか次のノードに行く
 					}
 					if (!isValid)
 					{

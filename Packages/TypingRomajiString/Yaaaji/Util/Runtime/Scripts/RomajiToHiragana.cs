@@ -31,7 +31,8 @@ namespace Yaaaji.Util
 			{ "xa", "ぁ" }, { "xi", "ぃ" }, { "xu", "ぅ" }, { "xe", "ぇ" }, { "xo", "ぉ" },
 			{ "ya", "や" }, { "yi", "い" }, { "yu", "ゆ" }, { "ye", "いぇ" }, { "yo", "よ" },
 			{ "za", "ざ" }, { "zi", "じ" }, { "zu", "ず" }, { "ze", "ぜ" }, { "zo", "ぞ" },
-			{ "nn", "ん" },{ "xn", "ん" },
+			{ "nn", "ん" },
+			{ "xn", "ん" },
 			{ "-", "ー" },
 
 			{ "kya", "きゃ" }, { "kyi","きぃ" }, { "kyu", "きゅ" },  {"kye","きぇ" }, { "kyo", "きょ" },
@@ -56,7 +57,8 @@ namespace Yaaaji.Util
 
 		private static readonly List<string> nRomajiList = new List<string>
 		{
-			"nn", "xn", 
+			"nn",
+			"xn",
 		};
 
 		private static Dictionary<string, List<string>> _hiraganaToRomajiTable = null;
@@ -202,6 +204,7 @@ namespace Yaaaji.Util
 					}
 					else {
 						// 次の文字を頭文字を一文字重ね、次の文字は子音だけにする.
+						// のは複雑なのでやらない
 						yield return new("ん",cToRomajiList("ん"));
 						i++;
 						continue;
