@@ -39,6 +39,7 @@ public class Test : MonoBehaviour
 				Debug.Log( $"romaji: {typingString.romaji}" );
 				Debug.Log( $"kanaText: {typingString.kanaText}" );
 				Debug.Log( $"romajiModified: {typingString.romajiModified}" );
+				Debug.Log( $"isChangeRomaji: {typingString.isChangeRomajiString}" );
 				kanaText.text = typingString.kanaText;
 				romajiText.text = typingString.romajiModified;
 			}

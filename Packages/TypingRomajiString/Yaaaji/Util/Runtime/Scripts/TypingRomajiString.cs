@@ -60,16 +60,18 @@ namespace Yaaaji.Util
 			public char c = ' ';
 			public int level = 0;
 			public int index = 0;
+			public bool isDefault = true;
 			public string str = null;
-			public List<Node> nextList = new ();
+			public List<Node> nextList = null;
 			public Dictionary<char,Node> nextDic;
 			public bool isEnd => nextDic == null || nextDic.Count <= 0;
 
-			public Node(char c,int level,int index)
+			public Node(char c,int level,int index,bool isDefault = true)
 			{
 				this.c = c;
 				this.level = level;
 				this.index = index;
+				this.isDefault = isDefault;
 			}
 
 			public string endString{
@@ -90,10 +92,11 @@ namespace Yaaaji.Util
 			public Node AddNext(char nextC,int index)
 			{
 				if (nextDic == null) nextDic = new ();
+				if (nextList == null) nextList = new ();
 				var n = FindNext(nextC);
 				// 新規追加の場合.
 				if ( n == null) {
-					var node = new Node(nextC,level+1,index);
+					var node = new Node(nextC,level+1,index, nextList.Count == 0);
 					nextDic.Add(node.c,node);
 					nextList.Add(node);
 					return node;
@@ -106,6 +109,7 @@ namespace Yaaaji.Util
 			{
 				if (nextDic == null) return null;
 				nextDic.TryGetValue(c,out var node);
+				//if (nextList == null) return null;
 				return node;
 			}
 		}
@@ -113,7 +117,7 @@ namespace Yaaaji.Util
 		class RomajiParts{
 			public string kana = "";
 			public List<string> romajiList = new ();
-			public Node rootNode = new Node(' ',-1,0);
+			public Node rootNode = new Node(' ',-1,0,true);
 			Node currentNode = null;
 			public int kanaIndex = 0;
 			public int kanaLength => kana.Length;
@@ -264,6 +268,7 @@ namespace Yaaaji.Util
 					var next = currentNode.FindNext(c);
 					if ( next != null )
 					{
+						isChangeString = !next.isDefault; // デフォルト以外に変更があったらtrueにする.
 						inputHistory += c;
 						inputIndex++;
 						currentNode = next;
