@@ -119,6 +119,7 @@ namespace Yaaaji.Util
 			public List<string> romajiList = new ();
 			public Node rootNode = new Node(' ',-1,0,true);
 			Node currentNode = null;
+			public bool isNoKana =false;
 			public int kanaIndex = 0;
 			public int kanaLength => kana.Length;
 			public bool isComplete => kanaIndex >= kanaLength;
@@ -148,12 +149,23 @@ namespace Yaaaji.Util
 				}
 			}
 
+			public bool CheckKana(char c){
+				// ひらがな以外はfalseを返す.
+				// ひらがなはtrueを返す.
+				// ひらがなはUnicodeで0x3040-0x309Fの範囲にある.
+				if (c >= 0x3040 && c <= 0x309F) return true;
+				return false;
+			}
+
 			public RomajiParts(int index,string kana,List<string> romajiList)
 			{
 				this.kana = kana;
 				this.romajiList = romajiList;
+				// かな変換できない文字は別の処理にする必要がある.
+				this.isNoKana = !CheckKana(kana[0]);
 				// romajiListからcharに分解した木構造を作る.
 				// 先頭の文字をrootNodeに追加する.
+				//Debug.Log($"new RomajiParts: {kana} list={string.Join(",", romajiList)}");
 				for (int i = 0; i < romajiList.Count; i++)
 				{
 					var r = romajiList[i];
@@ -296,13 +308,12 @@ namespace Yaaaji.Util
 					else
 					{
 						isValid = false;
-						// 他のリストにあるか調べる.
-						//isValid = searchOtherRomaji(c,isValid);
+
 						// 見つからない場合はn待ちか次のノードに行く
 					}
-					if (!isValid)
+					if ( !isValid )
 					{
-						// 無効な文字列が見つかったらhistoryの追加をやめる.
+						// 無効な文字列か終了まで行ったらhistoryの追加をやめる.
 						break;
 					}
 				}
@@ -310,6 +321,10 @@ namespace Yaaaji.Util
 					// nの時だけはvalid扱いにしない.
 					if ( isNWait ){
 						// n待ちの時はkanaIndexを更新しない（確定していないため).
+					}
+					else if ( isNoKana ){
+						// かなが無い場合はindexを更新しない.
+						kanaIndex = inputIndex;
 					}
 					else{
 						// inputHistoryの文字列をかなに変換する.

@@ -52,6 +52,7 @@ public class Test : MonoBehaviour
 
 	IEnumerator Test00()
 	{
+		yield return textTest( "hatomuneまじったやつ");
 		yield return textTest( "てんきですね" );
 		yield return textTest( "こわしちゃった" );
 	}
