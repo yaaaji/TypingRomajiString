@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Random = UnityEngine.Random;
 
@@ -449,7 +450,42 @@ namespace Yaaaji.Util
 		{
 			return c >= '\u3040' && c <= '\u309F';
 		}
+		
+		static bool IsKatakana(char c)
+		{
+			return c >= '\u30A0' && c <= '\u30FF';
+		}
+		static bool IsHankakuKatakana(char c)
+		{
+			return c >= '\uFF66' && c <= '\uFF9F';
+		}
 
+		static bool IsASCII(char c)
+		{
+			return c >= 0x20 && c <= 0x7F;
+		}
+		static char KatakanaToHiragana(char c)
+		{
+			if (IsKatakana(c))
+			{
+				return (char)(c - 0x60);
+			}
+			else if (IsHankakuKatakana(c))
+			{
+				// 半角カタカナを全角ひらがなに変換
+				var offset = c - 0xFF66;
+				return (char)(0x3040+offset);
+			}
+			else if (IsASCII(c))
+			{
+				return c;
+			}
+			else
+			{
+				UnityEngine.Debug.Log($"<color=red>KatakanaToHiragana</color> error: {c}");
+			}
+			return c;
+		}
 		// 元の文字列を「ひらがな」かどうかで連続部分（セグメント）に分割する
 		// 各セグメントは (text, isHiragana, startIndex) のタプルで表す
 		static List<(string text, bool isHiragana, int startIndex)> SegmentOriginal(string original)
@@ -497,16 +533,18 @@ namespace Yaaaji.Util
 				// 非漢字（ひらがな、カタカナ、記号など）は1対1対応とする
 				if (!IsKanji(sentence[i]))
 				{
+					//UnityEngine.Debug.Log($"<color=yellow>非漢字</color>[{i}]:{sentence[i]}->[{j}]");
 					mapping.Add(1);
 					i++;
 					j++;
 				}
 				else
 				{
-					// 漢字ブロックを抽出
+					// 連続する漢字ブロックを抽出
 					int blockStart = i;
 					while (i < sentence.Length && IsKanji(sentence[i]))
 					{
+						//UnityEngine.Debug.Log($"<color=green>漢字</color>[{i}]:{sentence[i]}");
 						i++;
 					}
 					int kanjiCount = i - blockStart;
@@ -517,6 +555,11 @@ namespace Yaaaji.Util
 					if (i < sentence.Length)
 					{
 						char delim = sentence[i];
+						// カタカナや半角カナがあるとズレてしまうので、ひらがなに変換してから比較
+						if ( !IsHiragana(delim) )
+						{
+							delim = KatakanaToHiragana(delim);
+						}
 						int nextCommonIndex = furigana.IndexOf(delim, j);
 						if (nextCommonIndex == -1)
 						{
@@ -542,6 +585,7 @@ namespace Yaaaji.Util
 						mapping.Add(countForChar);
 					}
 					j += readingLength;
+					//UnityEngine.Debug.Log($"<color=green>漢字表示位置</color>[{i}]:{sentence[i]}->{j} {readingLength} 連続漢字:{kanjiCount}");
 				}
 			}
 			
