@@ -55,7 +55,7 @@ namespace Yaaaji.Util
 
 		public string romajiFixed => fixedRomaji;
 		// 入力された文字列が元の文字列の何文字目なのかを返す(alphabetが入っていると漢字マップのインデクスがずれてしまうため)
-		public int romajiLeftMapIndex {
+		public int kanaInputMapIndex {
 			get{
 				if (isComplete) return kanaText.Length;
 
@@ -63,7 +63,7 @@ namespace Yaaaji.Util
 				var parts = currentParts;
 				if (parts == null) return 0;
 				// 現在のPartsのindexを取得する.
-				var index = parts.displayBeginIndex;
+				var index = parts.kanaIndex+ parts.displayBeginIndex;
 				// 現在のPartsのindexを取得する.
 				return index;
 			}
@@ -178,7 +178,7 @@ namespace Yaaaji.Util
 			public RomajiParts(int index,string kana,List<string> romajiList)
 			{
 				this.displayBeginIndex = index;
-				this.displayEndIndex = index + kana.Length;
+				this.displayEndIndex = index + kana.Length-1;
 				this.kana = kana;
 				this.romajiList = romajiList;
 				// かな変換できない文字は別の処理にする必要がある.

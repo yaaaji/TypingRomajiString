@@ -598,6 +598,7 @@ namespace Yaaaji.Util
 			// 逆にマップする.
 			var kanaToKanji = new List<int>();
 			int kanaIndex = 0;
+			var lastIndex = 0;
 			for (int i = 0; i < kanjiToKana.Count; i++)
 			{
 				for (int j = 0; j < kanjiToKana[i]; j++)
@@ -606,6 +607,7 @@ namespace Yaaaji.Util
 					kanaIndex++;
 				}
 			}
+			kanaToKanji.Add(kanjiToKana.Count);
 			return kanaToKanji;
 		}
 	}

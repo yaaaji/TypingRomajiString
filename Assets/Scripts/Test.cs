@@ -24,9 +24,11 @@ public class Test : MonoBehaviour
 		kanaText.text = typingString.kanaText;
 		romajiText.text = typingString.romajiModified;
 		kanjiMap = display.CreateKanjiToKanaMap( typingString.kanaText );
-		kanaToDisplayMap = new List<int>();
+		kanaToDisplayMap = display.CreateKanaToKanjiMap( typingString.kanaText );
 		var mapText = string.Join( ",", kanjiMap );
 		Debug.Log( $"kanjiMap: {mapText}" );
+		/*
+		kanaToDisplayMap = new List<int>();
 		int srcIndex = 0;
 		int displayIndex = 0;
 		foreach( var v in kanjiMap ){
@@ -51,6 +53,7 @@ public class Test : MonoBehaviour
 			displayIndex++;
 		}
 		kanjiMapText.text = mapText;
+		*/
 		kanaKanjiMapText.text = string.Join( ",", kanaToDisplayMap );
 	}
 
@@ -69,17 +72,22 @@ public class Test : MonoBehaviour
 			var acceptCount = typingString.UpdateInputString( input );
 			if( acceptCount > 0 )
 			{
+				var kanaInputIndex = typingString.kanaInputMapIndex;
+				
+				var displayIndex = kanaToDisplayMap[kanaInputIndex];
+
 				Debug.Log( $"input: {input}" );
 				Debug.Log( $"acceptCount: {acceptCount}" );
 				Debug.Log( $"romaji: {typingString.romaji}" );
 				Debug.Log( $"kanaText: {typingString.kanaText}" );
 				Debug.Log( $"romajiModified: {typingString.romajiModified}" );
 				Debug.Log( $"isChangeRomaji: {typingString.isChangeRomajiString}" );
+				Debug.Log( $"romajiLeftMapIndex: {kanaInputIndex}" );
 
 				// きりつめてひらがなに変換する.
 				// アルファベットがあるとひらがな変換時にマッピングが狂う
-				var inputIndex = typingString.romajiLeftMapIndex;
-				if (  inputIndex >= display.Length )
+				
+				if ( displayIndex >= display.Length )
 				{
 					// ひらがな→漢字マップを使って、漢字の部分をひらがなに変換する.
 					displayText.text = $"<color=#7f7f7f>{display}</color>";
@@ -87,9 +95,9 @@ public class Test : MonoBehaviour
 				else
 				{
 					// 漢字→ひらがなマップを使って、漢字を対応させる.
-					inputIndex = kanaToDisplayMap[inputIndex];
+					kanaInputIndex = kanaToDisplayMap[kanaInputIndex];
 					// 最初は負の値が入っている.
-					if ( inputIndex < 0 )
+					if ( kanaInputIndex < 0 )
 					{
 						// ひらがな→漢字マップを使って、漢字の部分をひらがなに変換する.
 						displayText.text = $"{display}";
@@ -97,7 +105,7 @@ public class Test : MonoBehaviour
 					else
 					{
 						// 漢字→ひらがなマップを使って、漢字を対応させる.
-						displayText.text = $"<color=#7f7f7f>{display.Substring(0, inputIndex)}</color><color=white>{display.Substring(inputIndex)}</color>";
+						displayText.text = $"<color=#7f7f7f>{display.Substring(0, kanaInputIndex)}</color><color=white>{display.Substring(kanaInputIndex)}</color>";
 					}
 				}
 				kanaText.text = typingString.kanaText;
