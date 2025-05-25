@@ -129,9 +129,9 @@ namespace Yaaaji.Util
 			return ConvertRomajiToHiragana(input, isTruncate);
 		}
 
-		public static string ToRomaji(this string input, bool useRandom = false)
+		public static string ToRomaji(this string input, bool useRandom = false,bool isLowerCase=true)
 		{
-			return ConvertHiraganaToRomaji(input, useRandom);
+			return ConvertHiraganaToRomaji(input, useRandom, isLowerCase);
 		}
 
 		static List<string> combinationCombine(List<string> list1, List<string> list2) {
@@ -146,7 +146,7 @@ namespace Yaaaji.Util
 			return result;
 		}
 
-		static IEnumerable<Tuple<string,List<string>>> convertHiraganaToRomaji(this string input)
+		static IEnumerable<Tuple<string,List<string>>> convertHiraganaToRomaji(this string input,bool isLowerCase = true)
 		{
 			int length = input.Length;
 			bool prevN = false;
@@ -255,7 +255,11 @@ namespace Yaaaji.Util
 					if ( !findRomaji )
 					{
 						// 変換できなかった場合は、そのまま追加.
-						yield return new ( c.ToString(), new List<string>{ c.ToString() });
+						if ( isLowerCase )
+						{
+							c = char.ToLower(c);
+						}
+						yield return new(c.ToString(), new List<string> { c.ToString() });
 						nextI++;
 					}
 					else
@@ -269,9 +273,9 @@ namespace Yaaaji.Util
 			}
 		}
 
-		public static IEnumerable<Tuple<string,List<string>>> ConvertHiraganaToRomaji(this string input)
+		public static IEnumerable<Tuple<string,List<string>>> ConvertHiraganaToRomaji(this string input,bool isLowerCase = true)
 		{
-			foreach(var pair in convertHiraganaToRomaji(input))
+			foreach(var pair in convertHiraganaToRomaji(input,isLowerCase))
 			{
 				var romajiList = pair.Item2;
 				romajiList.Sort((a, b) => {
@@ -282,87 +286,14 @@ namespace Yaaaji.Util
 			}
 		}
 
-		public static string ConvertHiraganaToRomaji(this string input, bool useRandom = false){
+		public static string ConvertHiraganaToRomaji(this string input, bool useRandom = false, bool isLowerCase = true)
+		{
 			string result = "";
-			foreach(var pair in ConvertHiraganaToRomaji(input))
+			foreach(var pair in ConvertHiraganaToRomaji(input,isLowerCase))
 			{
 				result += pair.Item2[0];
 			}
 			return result;
-			/*
-			string nextRomaji = "";
-
-			for (int i = 0; i < length;)
-			{
-				// Handle double consonants by waiting for the next vowel
-				var c = input[i];
-				if ( c == 'っ' )
-				{
-					// 最後の文字の場合はランダムでltu,xtuにする.
-					if ( (i+1) >= length )
-					{
-						result += cToRomaji("っ",useRandom);
-						i++;
-						continue;
-					}
-					// 次の文字が子音の場合は、その子音を重ねる.
-					else{
-						var nc = input[i+1];
-						if ( IsVowel(nc) || nc == 'っ' || IsNagyou(nc) ){
-							result += cToRomaji("っ",useRandom);
-							i++;
-							continue;
-						}
-						else
-						{
-							// 先頭の子音を重ねる.
-							nextRomaji = cToRomaji(nc.ToString(),useRandom);
-							result += nextRomaji.Substring(0,1);
-							i++;
-							continue;
-						}
-					}
-				}
-				else if ( c == 'ん' )
-				{
-					// 次が母音かNもしくは最後の文字の場合はnnにする.
-					if ( ((i+1) < length && (IsVowel(input[i+1]) || IsNagyou(input[i+1])||IsYagyou(input[i+1])))
-						|| (i+1) >= length )
-					{
-						result += "nn";
-						i++;
-						continue;
-					}
-
-					result += "n";
-					i++;
-					continue;
-				}
-				else{
-					var findRomaji = false;
-					for (int j = 2; j > 0; j--) // Try matching 3-letter, then 2-letter, then 1-letter combinations
-					{
-						if (i + j <= length) // substringで1文字少なくなるので<=にする.
-						{
-							string sub = input.Substring(i, j);
-							var romaji = cToRomaji(sub,useRandom);
-							if ( !string.IsNullOrEmpty(romaji) )
-							{
-								result += romaji;
-								i += j;
-								findRomaji = true;
-								break;
-							}
-						}
-					}
-					if ( !findRomaji ){
-						result += c;
-						i++;
-					}
-				}
-			}
-			return result;
-			*/
 		}
 
 		public static string ConvertRomajiToHiragana(string input, bool isTruncate = false)

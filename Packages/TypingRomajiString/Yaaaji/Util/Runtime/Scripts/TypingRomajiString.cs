@@ -468,7 +468,7 @@ namespace Yaaaji.Util
 
 			var kanaIndex = 0;
 			// _hiraganaListの各要素に対して、ローマ字のバリエーションを取得する
-			foreach (var kanaRomanPair in hiragana.ConvertHiraganaToRomaji())
+			foreach (var kanaRomanPair in hiragana.ConvertHiraganaToRomaji(isLowerCase:true))
 			{
 				var (kana,romajiList) = kanaRomanPair;
 				var parts = new RomajiParts(kanaIndex, kana, romajiList);
